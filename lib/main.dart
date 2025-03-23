@@ -1,8 +1,11 @@
+import 'package:droneworkz/dronebuilder.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:google_fonts/google_fonts.dart';
 
 void main() {
   runApp(MaterialApp(
+    theme: ThemeData(  fontFamily:GoogleFonts.montserrat().fontFamily,),
     home: SideNav(),
   ));
 }
@@ -57,7 +60,7 @@ class _SideNavState extends State<SideNav> {
                 onPressed: () {
                   _onNavItemTapped(_pages.indexOf('Hire Us'));
                 },
-                child: Text('Hire Us'),
+                child: Text('HIRE US'),
               ),
               Spacer(),
               IconButton(
@@ -147,7 +150,7 @@ class _SideNavState extends State<SideNav> {
               children: [
                 Column(
                   children: [
-                    SizedBox(width: 5,),
+                    SizedBox(width: 15,),
                     Text(
                         'Your next\nUAV/UGV\nbuilders',
                         textAlign: TextAlign.center,
@@ -302,7 +305,7 @@ class _SideNavState extends State<SideNav> {
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(
-          'Selected Work',
+          'SELECTED WORK',
           style: TextStyle(color: Colors.white, fontSize: 24),
         ),
         SizedBox(height: 20),
@@ -379,6 +382,10 @@ Widget _buildDroneBuilderPage() {
     child: ElevatedButton(
       onPressed: () {
         // Implement navigation to Drone Builder functionality
+        Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => Dronebuilder()),
+              );
       },
       onHover: (isHovered) {
                setState(() {
@@ -434,73 +441,290 @@ Widget _buildDroneBuilderPage() {
   );
 }
 
-  Widget _buildAboutPage() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'We believe in passionate people',
-            style: TextStyle(color: Colors.white, fontSize: 24),
-          ),
-          SizedBox(height: 20),
-          Text(
-            '3D Model Designers',
-            style: TextStyle(color: Colors.white),
-          ),
-          SizedBox(height: 10),
-          Text(
-            'Embedded Engineers',
-            style: TextStyle(color: Colors.white),
-          ),
-          SizedBox(height: 10),
-          Text(
-            'Marketing',
-            style: TextStyle(color: Colors.white),
-          ),
-        ],
+ Widget _buildAboutPage() {
+    return SingleChildScrollView(
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // "We believe in passionate people" with Blue Dots and Image on the right
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                SizedBox(width: 50,),
+                // Left: Text with blue dots around it
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      _buildTextWithBlueDots('We'),
+                      Row(
+                        children: [
+                             _buildTextWithBlueDots('Believe in'),
+                              SizedBox(width: 100,),
+                              Container(
+                                width: 75,
+                                height: 75,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.rectangle,
+                                  color: Colors.blue,
+                                ),
+                              ),
+
+                        ],
+                      ),
+                      _buildTextWithBlueDots('Passionate'),
+                      Row(
+                        children: [
+                             _buildTextWithBlueDots('People'),
+                              SizedBox(width: 70,),
+                              Container(
+                                width: 50,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  shape: BoxShape.circle,
+                                  color: Colors.blue,
+                                ),
+                              ),
+                        ],
+                      ),
+                     
+                    
+                      SizedBox(height: 10,),
+
+                      SizedBox(
+                      height: 60,
+                      width: 200,
+                      child:  ElevatedButton(
+                        onPressed: () {
+                          // Add your button functionality here
+                        },
+                        child: Row(
+                          children: [
+                            Text('Career'),
+                            Icon(Icons.arrow_forward),
+                          ],
+                        ),
+                        style: ElevatedButton.styleFrom(
+                          //primary: Colors.blueAccent, // Customize button color
+                          padding: EdgeInsets.symmetric(horizontal: 35, vertical: 12),
+                          
+                        ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Right: Image next to the text
+                Image.asset(
+                  'assets/img/about-visual.png', // Replace with your image path
+                  width: 400, // Adjust the size
+                  height: 400, // Adjust the size
+                  fit: BoxFit.cover,
+                ),
+                SizedBox(width: 80,),
+              ],
+            ),
+            SizedBox(height: 10),
+            // Section for "3D Model Designers", "Embedded Engineers", and "Marketing"
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                SizedBox(width: 50,),
+                _buildRoleSection(
+                  role: '3D MODEL DESIGNER',
+                  imagePath: 'assets/img/about-winners.jpg', // Replace with your image path
+                ),
+                _buildRoleSection(
+                  role: 'EMBEDDED ENGINEERS',
+                  imagePath: 'assets/img/about-history.jpg', // Replace with your image path
+                ),
+                _buildRoleSection(
+                  role: 'MARKETING',
+                  imagePath: 'assets/img/about-philosophy.jpg', // Replace with your image path
+                ),
+                SizedBox(width: 50,),
+              ],
+            ),
+            SizedBox(height: 30),
+            Text(
+              'DroneWorkz.AI is a team of dedicated professionals focused on creating innovative solutions using cutting-edge drone technology. Our team is built on passion and creativity to bring you the future of 3D modeling, embedded engineering, and marketing.',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                color: Colors.white70,
+                fontSize: 16,
+              ),
+            ),
+            SizedBox(height: 20),
+            
+          ],
+        ),
       ),
     );
   }
 
+  // Helper function to build text with blue dots around it
+  Widget _buildTextWithBlueDots(String text) {
+    return Row(
+      children: [
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(
+            shape: BoxShape.circle,
+            color: Colors.blue,
+          ),
+        ),
+        SizedBox(width: 8),
+        Text(
+          text,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 50,
+            fontWeight: FontWeight.w900,
+            fontFamily: "Montserrat",
+          ),
+        ),
+        SizedBox(width: 8),
+ 
+      ],
+    );
+  }
+
+  // Helper function for each role section
+  Widget _buildRoleSection({required String role, required String imagePath}) {
+    return Column(
+      children: [
+        Image.asset(
+          imagePath,
+          width: 100, // Set the width of the image
+          height: 100, // Set the height of the image
+          fit: BoxFit.cover,
+        ),
+        SizedBox(height: 10),
+        Text(
+          role,
+          style: TextStyle(
+            color: Colors.white,
+            fontSize: 18,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _buildContactPage() {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Text(
-            'Mississippi, Texas, USA',
-            style: TextStyle(color: Colors.white, fontSize: 24),
+    return Stack(
+      children: [
+        // Background Image
+        Positioned.fill(
+          child: Image.asset(
+            'assets/img/contact-visual.png', // Replace with your image path
+            fit: BoxFit.cover, // Cover the entire screen
           ),
-          SizedBox(height: 20),
-          Text(
-            'ouremail@gmail.com',
-            style: TextStyle(color: Colors.white),
+        ),
+        
+        // Black Box with White Text
+        SizedBox(height: 400, width: 400,),
+        Center(
+          
+          child: Container(
+            
+            margin: EdgeInsets.symmetric(horizontal: 20, vertical: 30),
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Color.fromARGB(120, 0, 0, 0), // Semi-transparent black box
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Address Section
+                Text(
+                  'Mississippi, Texas, USA',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                SizedBox(height: 20),
+                
+                // Email Section
+                Text(
+                  'ouremail@gmail.com',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                  ),
+                ),
+                SizedBox(height: 10),
+                
+                // Phone Number Section
+                Text(
+                  '+1 123 456 789',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 18,
+                  ),
+                ),
+                SizedBox(height: 20),
+                
+                // Office Locations Section
+                ElevatedButton(
+                  onPressed: () {
+                    // Implement navigation or functionality for the button
+                  },
+                  child: Text('MISSISSIPPI OFFICE',
+                            style: TextStyle(color: Color.fromARGB(255, 255, 255, 255),
+                         ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    //primary: Colors.blueAccent, // Customize button color
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    backgroundColor: Color.fromARGB(255, 0, 0, 255),
+                  ),
+              ),
+
+                SizedBox(height: 10),
+                
+              ElevatedButton(
+                  onPressed: () {
+                    // Implement navigation or functionality for the button
+                  },
+                 child: 
+                    Text('TEXAS OFFICE', 
+                          style: TextStyle(color: Color.fromARGB(255, 255, 255, 255),
+                     ),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    //primary: Colors.blueAccent, // Customize button color
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                    backgroundColor: Color.fromARGB(255, 255, 0, 0),
+                  ),
+              ),
+                
+                SizedBox(height: 20),
+                
+                // Contact Button
+                ElevatedButton(
+                  onPressed: () {
+                    // Implement navigation or functionality for the button
+                  },
+                  child: Text('CONTACT US'),
+                  style: ElevatedButton.styleFrom(
+                    //primary: Colors.blueAccent, // Customize button color
+                    padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  ),
+                ),
+              ],
+            ),
           ),
-          SizedBox(height: 10),
-          Text(
-            '+1 123 456 789',
-            style: TextStyle(color: Colors.white),
-          ),
-          SizedBox(height: 20),
-          Text(
-            'Mississippi office',
-            style: TextStyle(color: Colors.white),
-          ),
-          SizedBox(height: 10),
-          Text(
-            'Texas office',
-            style: TextStyle(color: Colors.white),
-          ),
-          SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () {
-              // Implement navigation to Contact Us functionality
-            },
-            child: Text('Contact Us'),
-          ),
-        ],
-      ),
+        ),
+        SizedBox(height: 200,),
+      ],
     );
   }
 
