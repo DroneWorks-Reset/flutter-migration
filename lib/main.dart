@@ -1,9 +1,16 @@
 import 'package:droneworkz/dronebuilder.dart';
+import 'package:droneworkz/firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-void main() {
+void main() async {
+
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+
   runApp(MaterialApp(
     theme: ThemeData(  fontFamily:GoogleFonts.montserrat().fontFamily,),
     home: SideNav(),
@@ -27,7 +34,7 @@ class _SideNavState extends State<SideNav> {
   // Function to get the page name based on the index
   String _getPageTitle(int index) {
     if (index == _currentIndex) {
-      return "0${index +1 } " + _pages[index]; // Show full title when active
+      return "0${index +1 } ${_pages[index]}"; // Show full title when active
     } else {
       return '0${index + 1}'; // Show number for inactive pages
     }
@@ -137,7 +144,7 @@ class _SideNavState extends State<SideNav> {
   }
 
   Widget _buildHomePage() {
-    bool _isHovered = false;
+    bool isHovered = false;
     return Center(
       child: 
       Padding(
@@ -173,7 +180,7 @@ class _SideNavState extends State<SideNav> {
 
                          onHover: (isHovered) {
                               setState(() {
-                                _isHovered = isHovered;
+                                isHovered = isHovered;
                               });
                             },
                        style: ButtonStyle(
@@ -377,7 +384,7 @@ class _SideNavState extends State<SideNav> {
 
 
 Widget _buildDroneBuilderPage() {
-  bool _isHovered = false;
+  bool isHovered = false;
   return Center(
     child: ElevatedButton(
       onPressed: () {
@@ -389,7 +396,7 @@ Widget _buildDroneBuilderPage() {
       },
       onHover: (isHovered) {
                setState(() {
-              _isHovered = isHovered;
+              isHovered = isHovered;
                               });
       },
       style: ButtonStyle(
@@ -500,16 +507,16 @@ Widget _buildDroneBuilderPage() {
                         onPressed: () {
                           // Add your button functionality here
                         },
+                        style: ElevatedButton.styleFrom(
+                          //primary: Colors.blueAccent, // Customize button color
+                          padding: EdgeInsets.symmetric(horizontal: 35, vertical: 12),
+                          
+                        ),
                         child: Row(
                           children: [
                             Text('Career'),
                             Icon(Icons.arrow_forward),
                           ],
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          //primary: Colors.blueAccent, // Customize button color
-                          padding: EdgeInsets.symmetric(horizontal: 35, vertical: 12),
-                          
                         ),
                         ),
                       ),
@@ -677,14 +684,14 @@ Widget _buildDroneBuilderPage() {
                   onPressed: () {
                     // Implement navigation or functionality for the button
                   },
-                  child: Text('MISSISSIPPI OFFICE',
-                            style: TextStyle(color: Color.fromARGB(255, 255, 255, 255),
-                         ),
-                  ),
                   style: ElevatedButton.styleFrom(
                     //primary: Colors.blueAccent, // Customize button color
                     padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     backgroundColor: Color.fromARGB(255, 0, 0, 255),
+                  ),
+                  child: Text('MISSISSIPPI OFFICE',
+                            style: TextStyle(color: Color.fromARGB(255, 255, 255, 255),
+                         ),
                   ),
               ),
 
@@ -694,15 +701,15 @@ Widget _buildDroneBuilderPage() {
                   onPressed: () {
                     // Implement navigation or functionality for the button
                   },
-                 child: 
-                    Text('TEXAS OFFICE', 
-                          style: TextStyle(color: Color.fromARGB(255, 255, 255, 255),
-                     ),
-                  ),
                   style: ElevatedButton.styleFrom(
                     //primary: Colors.blueAccent, // Customize button color
                     padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                     backgroundColor: Color.fromARGB(255, 255, 0, 0),
+                  ),
+                 child: 
+                    Text('TEXAS OFFICE', 
+                          style: TextStyle(color: Color.fromARGB(255, 255, 255, 255),
+                     ),
                   ),
               ),
                 
@@ -713,11 +720,11 @@ Widget _buildDroneBuilderPage() {
                   onPressed: () {
                     // Implement navigation or functionality for the button
                   },
-                  child: Text('CONTACT US'),
                   style: ElevatedButton.styleFrom(
                     //primary: Colors.blueAccent, // Customize button color
                     padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
                   ),
+                  child: Text('CONTACT US'),
                 ),
               ],
             ),

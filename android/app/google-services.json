@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "672514452819",
+    "firebase_url": "https://droneworkz-facc9-default-rtdb.firebaseio.com",
+    "project_id": "droneworkz-facc9",
+    "storage_bucket": "droneworkz-facc9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:672514452819:android:12046211cf9f42c42145a6",
+        "android_client_info": {
+          "package_name": "com.example.droneworkz"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "672514452819-69hgmdjm4abnsigadmlcaepsdhpid7jj.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBDdBX0xo7c7Q8dhVjQObwqTsIoJxyPyPU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "672514452819-69hgmdjm4abnsigadmlcaepsdhpid7jj.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "672514452819-msdkbmevasceda28d95oqj91359b958f.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.droneworkz"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
