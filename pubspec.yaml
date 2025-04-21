@@ -77,6 +77,12 @@ flutter:
     - assets/img/copter1.jpg
     - assets/img/copter2.jpg
     - assets/img/copter3.jpg
+    - assets/img/preconfigured_platforms/pic1.jpg
+    - assets/img/preconfigured_platforms/pic2.jpg
+    - assets/img/frames/pic1.jpg
+    - assets/img/frames/pic2.jpg
+
+
     
 
   # An image asset can refer to one or more resolution-specific "variants", see

@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart'; 
 import 'package:google_sign_in/google_sign_in.dart'; 
 import 'package:firebase_database/firebase_database.dart'; 
+import 'cart.dart';
+
+String selectedPart = 'Preconfigured Platforms'; // To store the selected part
 
 class Dronebuilder extends StatefulWidget {
   @override
@@ -15,7 +18,6 @@ class _DronebuilderState extends State<Dronebuilder> {
   bool isUserLoggedIn = false;
   int cartItemCount = 0;
   final DatabaseReference _database = FirebaseDatabase.instance.ref("Users");
-  String selectedPart = ''; // To store the selected part
 
   @override
   void initState() {
@@ -38,12 +40,28 @@ class _DronebuilderState extends State<Dronebuilder> {
     if (isUserLoggedIn) {
       User? user = _auth.currentUser;
       if (user != null) {
-        _database.child(user.email!.replaceAll('.', ',')).child('cart').child('itemCount').onValue.listen((event) {
-          if (event.snapshot.value != null) {
-            setState(() {
-              cartItemCount = event.snapshot.value as int;
-            });
+        final cartRef = _database.child(user.email!.replaceAll('.', ',')).child('cart');
+
+        cartRef.onValue.listen((event) {
+          int total = 0;
+
+          if (event.snapshot.value != null && event.snapshot.value is Map) {
+            final items = Map<String, dynamic>.from(event.snapshot.value as Map);
+
+            for (var part in items.values) {
+              if (part is Map) {
+                for (var item in part.values) {
+                  if (item is Map && item.containsKey('quantity')) {
+                    total += int.tryParse(item['quantity'].toString()) ?? 0;
+                  }
+                }
+              }
+            }
           }
+
+          setState(() {
+            cartItemCount = total;
+          });
         });
       }
     }
@@ -95,28 +113,31 @@ class _DronebuilderState extends State<Dronebuilder> {
     }
   }
 
-  void updateCart(int count) async {
-    if (isUserLoggedIn) {
-      User? user = _auth.currentUser;
-      if (user != null) {
-        DatabaseReference userCartRef = _database.child(user.email!.replaceAll('.', ',')).child('cart');
-        await userCartRef.set({'itemCount': count});
-      }
-    }
-  }
-
   void addToCart() {
     setState(() {
       cartItemCount++;
     });
-    updateCart(cartItemCount);
   }
 
-  // Update selected part and highlight
   void selectPart(String partName) {
     setState(() {
       selectedPart = partName; // Update selected part
     });
+  }
+
+  void openCartBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.black,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      isScrollControlled: true,
+      builder: (_) => FractionallySizedBox(
+        heightFactor: 0.85,
+        child: CartPage(),
+      ),
+    );
   }
 
   @override
@@ -126,6 +147,40 @@ class _DronebuilderState extends State<Dronebuilder> {
         title: Row(children: [ElevatedButton(onPressed: () { Navigator.pop(context); }, child: Text('Go back'))]),
         backgroundColor: Colors.black,
         actions: [
+           Stack(
+            children: [
+              Tooltip(
+                message: isUserLoggedIn ? "Go to cart" : "Login first to save items in cart",
+                child: IconButton(
+                  icon: Icon(Icons.shopping_cart,
+                      color: isUserLoggedIn ? Colors.white : Colors.grey),
+                  onPressed: isUserLoggedIn
+                      ? openCartBottomSheet
+                      : null,
+                ),
+              ),
+              if (cartItemCount > 0)
+                Positioned(
+                  right: 0,
+                  top: 0,
+                  child: Container(
+                    padding: EdgeInsets.all(5),
+                    decoration: BoxDecoration(
+                      color: Colors.red,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Text(
+                      '$cartItemCount',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ),
+            ],
+          ),
           IconButton(
             icon: Row(children: [Icon(Icons.login, color: Color.fromARGB(125, 255, 255, 255)), Text(signinText, style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)))]),
             onPressed: () async {
@@ -148,7 +203,7 @@ class _DronebuilderState extends State<Dronebuilder> {
           ),
         ],
       ),
-      body: droneBuilderBody(isUserLoggedIn, addToCart, selectPart, selectedPart),
+      body: droneBuilderBody(isUserLoggedIn, addToCart, selectedPart, selectPart),
     );
   }
 }

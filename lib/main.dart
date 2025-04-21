@@ -48,76 +48,87 @@ class _SideNavState extends State<SideNav> {
     _pageController.jumpToPage(index);  // Switch the PageView to the selected page
   }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          backgroundColor: const Color.fromARGB(255, 0, 0, 0),
-          title: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Image.asset('assets/img/logo.png'),
-              SizedBox(width: 10),
-              Text(
-                "DRONEWORKz",
-                style: TextStyle(color: Colors.white),
-              ),
-              SizedBox(width: 650),
-              ElevatedButton(
+@override
+Widget build(BuildContext context) {
+  return Scaffold(
+   appBar: AppBar(
+  backgroundColor: const Color.fromARGB(255, 0, 0, 0),
+  title: LayoutBuilder(
+    builder: (context, constraints) {
+      return Container(
+        width: constraints.maxWidth, // Makes sure Row respects screen size
+        child: Row(
+          children: [
+            Image.asset('assets/img/logo.png', height: 30),
+            SizedBox(width: 10),
+            Text(
+              "DRONEWORKz",
+              style: TextStyle(color: Colors.white),
+            ),
+            Spacer(),
+            Visibility(
+              visible: constraints.maxWidth > 500, // Hide if screen is small
+              child: ElevatedButton(
                 onPressed: () {
                   _onNavItemTapped(_pages.indexOf('Hire Us'));
                 },
                 child: Text('HIRE US'),
               ),
-              Spacer(),
-              IconButton(
-                icon: Icon(Icons.menu, color: Colors.white),
-                onPressed: () {
-                  print("Menu button pressed");
-                },
-              ),
-            ],
+            ),
+            IconButton(
+              icon: Icon(Icons.menu, color: Colors.white),
+              onPressed: () {
+                print("Menu button pressed");
+              },
+            ),
+          ],
+        ),
+      );
+    },
+  ),
+),
+
+    body: Row(
+      children: [
+        // Side Navigation
+        Container(
+          padding: EdgeInsets.all(20),
+          width: 250,
+          color: const Color.fromARGB(255, 0, 0, 0),
+          child: ListView.builder(
+            padding: EdgeInsets.all(10),
+            itemCount: _pages.length,
+            itemBuilder: (context, index) {
+              return _buildNavItem(index);
+            },
           ),
         ),
-      body: Row(
-        children: [
-          // Side Navigation
-          Container(
-            padding: EdgeInsets.all(20),  // Reduced padding for better spacing
-            width: 250,
-            color: const Color.fromARGB(255, 0, 0, 0),
-              child: ListView.builder(
-                padding: EdgeInsets.all(10),
-                //shrinkWrap: true, // Prevents ListView from taking more space than necessary
-                itemCount: _pages.length,
-                itemBuilder: (context, index) {
-                  return _buildNavItem(index);
-                },
-              ),
+
+        // Main content
+        Expanded(
+          child: Container(
+            color: Colors.black,
+            child: PageView.builder(
+              controller: _pageController,
+              itemCount: _pages.length,
+              scrollDirection: Axis.vertical,
+              itemBuilder: (context, index) {
+                return _buildPageContent(index, context);
+              },
+              onPageChanged: (index) {
+                setState(() {
+                  _currentIndex = index;
+                });
+              },
+            ),
           ),
-          // Main content - PageView for swipeable pages (vertical swipe)
-    Expanded(
-      child: Container(
-        color: Colors.black, // Set background color to black
-        child: PageView.builder(
-          controller: _pageController,
-          itemCount: _pages.length,
-          scrollDirection: Axis.vertical,  // Set scroll direction to vertical
-          itemBuilder: (context, index) {
-            return _buildPageContent(index, context);
-          },
-          onPageChanged: (index) {
-            setState(() {
-              _currentIndex = index;  // Update the current index on swipe
-            });
-          }
-          ),
-          ),
-          ),
-        ],
-      ),
-    );
-  }
+        ),
+      ],
+    ),
+  );
+}
+
+
 
   Widget _buildPageContent(int index, BuildContext context) {
     switch (_pages[index]) {
@@ -773,54 +784,39 @@ Widget _buildDroneBuilderPage() {
  
 
   Widget _buildNavItem(int index) {
-  return ListTile(
-    contentPadding: EdgeInsets.all(10),
-    title: Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      
-      children: [
-        
-        CircleAvatar(
-          radius: 10,
-          backgroundColor: _currentIndex == index
-              ? const Color.fromARGB(255, 0, 0, 255)
-              : Color.fromARGB(255, 190, 190, 190),
-          
+  bool isSelected = _currentIndex == index;
+
+  return Padding(
+    padding: const EdgeInsets.symmetric(vertical: 8),
+    child: InkWell(
+      onTap: () => _onNavItemTapped(index),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isSelected ? Colors.white : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
         ),
-        SizedBox(width: 5),
-        Column(
+        padding: const EdgeInsets.all(8),
+        child: Row(
           children: [
-              Text(
-                _getPageTitle(index), 
-                style: TextStyle(color:  _currentIndex == index 
-                                  ? Color.fromARGB(255, 255, 255, 255) 
-                                  : Color.fromARGB(255, 190, 190, 190)
-                        ),
-              ), 
-              SizedBox(height: 5),
-              Container(
-                width: 150,
-                height: 2,
-                color: _currentIndex == index
-                    ? const Color.fromARGB(255, 0, 0, 255)
-                    : Color.fromARGB(255, 190, 190, 190)
+            Icon(
+              Icons.circle,
+              size: 12,
+              color: isSelected ? Colors.blue : Colors.grey,
+            ),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Text(
+                '0${index + 1} ${_pages[index]}',
+                style: TextStyle(
+                  color: isSelected ? Colors.black : Colors.white,
+                  overflow: TextOverflow.ellipsis, // ← prevent text overflow
                 ),
-                
+              ),
+            ),
           ],
         ),
-        SizedBox(width: 5),
-        CircleAvatar(
-          radius: 10,
-          backgroundColor: _currentIndex == index
-              ? const Color.fromARGB(255, 0, 0, 255)
-              : Color.fromARGB(255, 190, 190, 190),
-        ),
-        
-        SizedBox(width: 15),
-
-      ],
+      ),
     ),
-    onTap: () => _onNavItemTapped(index), // Handle tapping a nav item
   );
 }
 
