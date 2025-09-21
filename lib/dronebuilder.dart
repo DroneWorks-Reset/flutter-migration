@@ -1,3 +1,4 @@
+import 'package:droneworkz/checklist.dart';
 import 'package:droneworkz/drone_builder_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -51,45 +52,56 @@ class _DronebuilderState extends State<Dronebuilder> {
     print("Image precaching initiated.");
   }
 
+  // --- THIS IS THE KEY FIX ---
+  /// Uses a real-time listener to check for login/logout events.
   void _checkUserLoginStatus() {
-    User? user = _auth.currentUser;
-    if (user != null) {
-      setState(() {
-        isUserLoggedIn = true;
-        signinText = "Logout";
-      });
-      _fetchCartItemCount();
-    }
+    _auth.authStateChanges().listen((User? user) {
+      if (!mounted) return; // Ensure the widget is still in the tree
+
+      if (user == null) {
+        // User is signed out
+        setState(() {
+          isUserLoggedIn = false;
+          signinText = "Login";
+          cartItemCount = 0;
+        });
+      } else {
+        // User is signed in
+        setState(() {
+          isUserLoggedIn = true;
+          signinText = "Logout";
+        });
+        _fetchCartItemCount(); // Fetch cart count as soon as user is confirmed
+      }
+    });
   }
 
   void _fetchCartItemCount() async {
-    if (isUserLoggedIn) {
-      User? user = _auth.currentUser;
-      if (user != null) {
-        // IMPORTANT: Using user.uid is the recommended best practice.
-        final cartRef = _database.child(user.uid).child('cart');
+    User? user = _auth.currentUser;
+    if (user != null) {
+      // IMPORTANT: Using user.uid is the recommended best practice.
+      final cartRef = _database.child(user.email!.replaceAll('.', ',')).child('cart');
 
-        cartRef.onValue.listen((event) {
-          int total = 0;
-          if (event.snapshot.value != null && event.snapshot.value is Map) {
-            final items = Map<String, dynamic>.from(event.snapshot.value as Map);
-            for (var part in items.values) {
-              if (part is Map) {
-                for (var item in part.values) {
-                  if (item is Map && item.containsKey('quantity')) {
-                    total += int.tryParse(item['quantity'].toString()) ?? 0;
-                  }
+      cartRef.onValue.listen((event) {
+        int total = 0;
+        if (event.snapshot.exists && event.snapshot.value is Map) {
+          final items = Map<String, dynamic>.from(event.snapshot.value as Map);
+          for (var part in items.values) {
+            if (part is Map) {
+              for (var item in part.values) {
+                if (item is Map && item.containsKey('quantity')) {
+                  total += int.tryParse(item['quantity'].toString()) ?? 0;
                 }
               }
             }
           }
-          if (mounted) {
-            setState(() {
-              cartItemCount = total;
-            });
-          }
-        });
-      }
+        }
+        if (mounted) {
+          setState(() {
+            cartItemCount = total;
+          });
+        }
+      });
     }
   }
 
@@ -106,16 +118,7 @@ class _DronebuilderState extends State<Dronebuilder> {
       );
 
       UserCredential userCredential = await _auth.signInWithCredential(credential);
-      User? user = userCredential.user;
-
-      if (user != null) {
-        setState(() {
-          isUserLoggedIn = true;
-          signinText = "Logout";
-        });
-        _fetchCartItemCount();
-      }
-      return user;
+      return userCredential.user;
     } catch (e) {
       print("Error signing in: $e");
       return null;
@@ -124,13 +127,8 @@ class _DronebuilderState extends State<Dronebuilder> {
 
   Future<void> logout() async {
     try {
-      await FirebaseAuth.instance.signOut();
       await GoogleSignIn().signOut(); // Also sign out from Google
-      setState(() {
-        signinText = "Login";
-        isUserLoggedIn = false;
-        cartItemCount = 0;
-      });
+      await FirebaseAuth.instance.signOut();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('You have successfully logged out.')));
       }
@@ -152,13 +150,24 @@ class _DronebuilderState extends State<Dronebuilder> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.black,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      isScrollControlled: true,
+      builder: (_) => FractionallySizedBox(heightFactor: 0.85, child: CartPage()),
+    );
+  }
+
+  void _openChecklistBottomSheet() {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.black,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       isScrollControlled: true,
+      // --- CHANGE HERE: We now pass the openCartBottomSheet function to the ChecklistPage ---
       builder: (_) => FractionallySizedBox(
         heightFactor: 0.85,
-        child: CartPage(),
+        child: ChecklistPage(onCheckout: openCartBottomSheet), // Pass the function
       ),
     );
   }
@@ -167,19 +176,18 @@ class _DronebuilderState extends State<Dronebuilder> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          children: [
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
-              child: Text('Go back'),
-            )
-          ],
-        ),
+        title: Row(children: [ElevatedButton(onPressed: () => Navigator.pop(context), child: Text('Go back'))]),
         backgroundColor: Colors.black,
         actions: [
+          Tooltip(
+            message: "View Checklist",
+            child: IconButton(
+              icon: Icon(Icons.checklist_rtl, color: Colors.white),
+              onPressed: _openChecklistBottomSheet,
+            ),
+          ),
           Stack(
+            alignment: Alignment.center,
             children: [
               Tooltip(
                 message: isUserLoggedIn ? "Go to cart" : "Login first to save items in cart",
@@ -190,23 +198,16 @@ class _DronebuilderState extends State<Dronebuilder> {
               ),
               if (cartItemCount > 0)
                 Positioned(
-                  right: 5,
-                  top: 5,
+                  right: 8,
+                  top: 8,
                   child: Container(
-                    padding: EdgeInsets.all(4),
-                    decoration: BoxDecoration(
-                      color: Colors.red,
-                      shape: BoxShape.circle,
-                    ),
-                    constraints: BoxConstraints(minWidth: 18, minHeight: 18),
+                    padding: EdgeInsets.all(2),
+                    decoration: BoxDecoration(color: Colors.red, shape: BoxShape.circle),
+                    constraints: BoxConstraints(minWidth: 16, minHeight: 16),
                     child: Center(
                       child: Text(
                         '$cartItemCount',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 10,
-                        ),
+                        style: TextStyle(color: Colors.white, fontSize: 10, fontWeight: FontWeight.bold),
                       ),
                     ),
                   ),
@@ -231,6 +232,7 @@ class _DronebuilderState extends State<Dronebuilder> {
           ),
         ],
       ),
+      
       body: droneBuilderBody(isUserLoggedIn, selectedPart, selectPart),
     );
   }

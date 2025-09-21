@@ -62,7 +62,7 @@ final Map<String, Map<String, Map<String, String>>> partDetails = {
     "LIDARs": { "pic1": {"name": "LIDAR Lite v4", "price": "170", "description": "Accurate distance sensing in compact form.", "imageUrl": placeholderImageUrl}, "pic2": {"name": "TF Mini Plus", "price": "110", "description": "Lightweight LIDAR for collision avoidance.", "imageUrl": placeholderImageUrl}, },
     "Lights": { "pic1": {"name": "LED Navigation Kit", "price": "30", "description": "Enhances visibility for orientation and safety.", "imageUrl": placeholderImageUrl}, "pic2": {"name": "Strobe Beacon", "price": "25", "description": "Ultra-bright strobe for visual tracking.", "imageUrl": placeholderImageUrl}, },
     "Motors": {
-      "pic1": {"name": "Axisflying AE V2 2306.5 Motor", "price": "20.99", "description": "A high-performance 2306.5 motor, available in 1860KV or 1960KV.", "link": "https://www.getfpv.com/axisflying-ae-v2-2306-5-motor-1860kv-1960kv.html", "imageUrl": "https://cdn-v2.getfpv.com/media/catalog/product/cache/6305596479836c3bfef8b369c2d05576/a/x/axisflying_ae_v2_2306-5_motor_-_1860kv-1960kv-1.jpg"},
+      "pic1": {"name": "Axisflying AE V2 2306_5 Motor", "price": "20.99", "description": "A high-performance 2306_5 motor, available in 1860KV or 1960KV.", "link": "https://www.getfpv.com/axisflying-ae-v2-2306-5-motor-1860kv-1960kv.html", "imageUrl": "https://cdn-v2.getfpv.com/media/catalog/product/cache/6305596479836c3bfef8b369c2d05576/a/x/axisflying_ae_v2_2306-5_motor_-_1860kv-1960kv-1.jpg"},
       "pic2": {"name": "Heavy Lift Motor 3510", "price": "65", "description": "Designed for lifting larger payloads.", "imageUrl": placeholderImageUrl},
       "pic3": { "name": "Readytosky 2205 2300KV Brushless Motor", "price": "35.99", "description": "A set of four 2300KV motors suitable for FPV quadcopters.", "link": "https://www.amazon.com/Readytosky-RS2205-2300KV-Brushless-Multicopter/dp/B088NGCZ64", "imageUrl": placeholderImageUrl },
       "pic4": { "name": "Holybro 2216 920 KV Motor", "price": "32.29", "description": "A set of four 920KV motors compatible with 1045 propellers, ideal for larger frames.", "link": "https://www.aliexpress.us/item/3256804376252643.html", "imageUrl": placeholderImageUrl },
@@ -173,7 +173,7 @@ class _DroneImagePreviewState extends State<DroneImagePreview> {
     setState(() { currentIndex = (currentIndex + 1) % items.length; });
   }
 
-  void handleAddToCart() async {
+void handleAddToCart() async {
     if (!widget.isUserLoggedIn) return;
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -183,13 +183,26 @@ class _DroneImagePreviewState extends State<DroneImagePreview> {
     final picKey = partCategoryData.keys.toList()[currentIndex];
     final detail = partCategoryData[picKey];
     if (detail != null) {
-      final partRef = db.child(user.uid).child('cart').child(widget.selectedPart).child(detail['name']!);
+      // REVERTED: Now using user's email as the key, as requested.
+      final partRef = db.child(user.email!.replaceAll('.', ',')).child('cart').child(widget.selectedPart).child(detail['name']!);
+      
       final snapshot = await partRef.get();
       int currentQuantity = 0;
       if (snapshot.exists && snapshot.child('quantity').value != null) {
         currentQuantity = int.tryParse(snapshot.child('quantity').value.toString()) ?? 0;
       }
       await partRef.set({'part': widget.selectedPart, 'itemName': detail['name'], 'price': detail['price'], 'description': detail['description'], 'link': detail['link'] ?? '', 'imageUrl': detail['imageUrl'] ?? '', 'quantity': currentQuantity + 1});
+      
+      if (mounted) {
+        final partName = detail['name'] ?? 'Item';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('$partName added successfully!'),
+            backgroundColor: Colors.green[600],
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
     }
   }
 
