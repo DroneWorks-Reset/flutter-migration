@@ -13,11 +13,16 @@ final Map<String, Map<String, Map<String, String>>> partDetails = {
       "pic2": {"name": "Wise Owl", "price": "1800", "description": "High-performance hexacopter for heavy payloads.", "imageUrl": placeholderImageUrl},
     },
     "Frames": {
-      "pic1": { "name": "Carbon Fiber Sheet: 200x300 mm, 2mm thick", "price": "50.49", "description": "A high-quality 3K carbon fiber sheet for custom drone frame construction.", "link": "https://www.getfpv.com/lumenier-3k-carbon-fiber-sheet-2mm-thick-200x300mm.html", "imageUrl": "https://cdn-v2.getfpv.com/media/catalog/product/cache/05bc89904627dbee2e1afef9cd2d4128/l/u/lumenier-qav-xs-stretch-fpv-racing-quadcopter_1_1_1_1_1_1_2.jpg" },
+      "pic1": {
+        "name": "Carbon Fiber Sheet: 200x300 mm, 2mm thick",
+        "price": "50.49",
+        "description": "A high-quality 3K carbon fiber sheet for custom drone frame construction.",
+        "link": "https://www.getfpv.com/lumenier-3k-carbon-fiber-sheet-2mm-thick-200x300mm.html",
+        "imageUrl": "https://cdn-v2.getfpv.com/media/catalog/product/cache/05bc89904627dbee2e1afef9cd2d4128/l/u/lumenier-qav-xs-stretch-fpv-racing-quadcopter_1_1_1_1_1_1_2.jpg"
+      },
       "pic2": {"name": "Carbon X Frame", "price": "150", "description": "Lightweight carbon fiber frame for agility and strength.", "imageUrl": placeholderImageUrl},
       "pic3": {"name": "Titanium Heavy Frame", "price": "220", "description": "Durable frame for rugged conditions and heavy drones.", "imageUrl": placeholderImageUrl},
     },
-    // ... all other categories and parts are here, correctly ordered ...
     "Accessories": {
       "pic1": {"name": "EV800D FPV Goggles with DVR", "price": "108.99", "description": "5.8G 40CH 5-inch screen goggles with built-in DVR for an immersive FPV experience.", "link": "https://www.amazon.com/dp/B0CDLG441L", "imageUrl": "https://m.media-amazon.com/images/I/613qxlEHRDL._AC_SL1500_.jpg"},
       "pic2": {"name": "GoPro Camera Gimbal", "price": "68.13", "description": "A gimbal to stabilize your GoPro camera for smooth aerial video.", "link": "https://www.aliexpress.us/item/3256807390551452.html", "imageUrl": "https://ae01.alicdn.com/kf/S38f5f33f07a44131825a072c49221190N.jpg_640x640Q90.jpg"},
@@ -84,8 +89,7 @@ final Map<String, Map<String, Map<String, String>>> partDetails = {
       "pic4": { "name": "Blue Herelink Smart Controller", "price": "3699.00", "description": "An NDAA-compliant smart controller with an integrated screen and long-range HD video transmission.", "link": "https://nwblue.com/products/herelink-blue-v1-1", "imageUrl": placeholderImageUrl },
     },
     "Range Finder": { "pic1": {"name": "Laser Range Sensor", "price": "70", "description": "High-precision laser distance sensor.", "imageUrl": placeholderImageUrl}, "pic2": {"name": "Infrared Range Module", "price": "55", "description": "Affordable module for basic range sensing.", "imageUrl": placeholderImageUrl}, },
-  };
-
+};
 /// Defines the main two-column layout for the drone builder page.
 Widget droneBuilderBody(bool isUserLoggedIn, String selectedPart, Function selectPart) {
   return Scaffold(
@@ -95,7 +99,12 @@ Widget droneBuilderBody(bool isUserLoggedIn, String selectedPart, Function selec
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(flex: 2, child: SingleChildScrollView(child: Column( crossAxisAlignment: CrossAxisAlignment.start, children: [ Padding( padding: const EdgeInsets.symmetric(vertical: 16.0), child: Text("Build Your Drone", style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold))), ..._partList.map((part) => _buildOptionTile(part['title']!, part['subtitle']!, selectedPart, selectPart))]))),
+          Expanded(flex: 2, 
+            child: SingleChildScrollView(
+                child: Column( crossAxisAlignment: CrossAxisAlignment.start, 
+                children: [ Padding( padding: const EdgeInsets.symmetric(vertical: 16.0), 
+                child: Text("Build Your Drone", style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold))), 
+                ..._partList.map((part) => _buildOptionTile(part['title']!, part['subtitle']!, selectedPart, selectPart))]))),
           SizedBox(width: 20),
           Expanded(flex: 3, child: DroneImagePreview(isUserLoggedIn: isUserLoggedIn, selectedPart: selectedPart)),
         ],
@@ -108,16 +117,29 @@ Widget droneBuilderBody(bool isUserLoggedIn, String selectedPart, Function selec
 final List<Map<String, String>> _partList = [
   {"title": "Preconfigured Platforms", "subtitle": "Choose from pre-built drone models"},
   {"title": "Frames", "subtitle": "Select a drone frame"},
-  // ... all other list items ...
+  {"title": "Accessories", "subtitle": "Add extra components"},
+  {"title": "Batteries", "subtitle": "Pick a long-lasting battery"},
+  {"title": "Camera Accessories", "subtitle": "Enhance your drone's camera capabilities"},
+  {"title": "ESCs", "subtitle": "Select electronic speed controllers"},
+  {"title": "Flight Controller", "subtitle": "Choose a flight controller"},
+  {"title": "GNSS Antenna", "subtitle": "Select a GNSS antenna"},
+  {"title": "LIDARs", "subtitle": "Add LIDAR sensors"},
+  {"title": "Lights", "subtitle": "Equip your drone with lights"},
+  {"title": "Motors", "subtitle": "Choose powerful motors"},
+  {"title": "Onboard Computer", "subtitle": "Select an onboard computer"},
+  {"title": "Parachutes", "subtitle": "Add safety parachutes"},
+  {"title": "Propellers", "subtitle": "Pick suitable propellers"},
+  {"title": "Radars & Sonars", "subtitle": "Equip your drone with radar and sonar systems"},
+  {"title": "Radio Receivers", "subtitle": "Choose a radio receiver"},
+  {"title": "Radio Transmitter", "subtitle": "Select a radio transmitter"},
+  {"title": "Range Finder", "subtitle": "Add a range finder"},
 ];
 
-/// Builds a single selectable tile for the left-hand menu.
 Widget _buildOptionTile(String title, String subtitle, String selectedPart, Function selectPart) {
   final bool isSelected = selectedPart == title;
   return Container(width: 500, margin: const EdgeInsets.symmetric(vertical: 4), decoration: BoxDecoration(color: isSelected ? Colors.blueAccent : Colors.transparent, borderRadius: BorderRadius.circular(8)), child: ListTile(leading: Icon(Icons.settings, color: isSelected ? Colors.white : Colors.blueAccent.withOpacity(0.7)), title: Text(title, style: TextStyle(fontWeight: FontWeight.bold, color: isSelected ? Colors.white : Colors.white70)), subtitle: Text(subtitle, style: TextStyle(color: isSelected ? Colors.white.withOpacity(0.9) : Colors.white60)), trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white), onTap: () => selectPart(title)));
 }
 
-/// The stateful widget that displays the selected part's image, details, and actions.
 class DroneImagePreview extends StatefulWidget {
   final bool isUserLoggedIn;
   final String selectedPart;
@@ -215,7 +237,7 @@ class _DroneImagePreviewState extends State<DroneImagePreview> {
               IconButton(icon: const Icon(Icons.arrow_forward_ios, color: Colors.white), onPressed: showNextImage),
             ],
           ),
-          SizedBox(height: 20),
+          SizedBox(height: 10),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20.0),
             child: Text(detail?['name'] ?? "Part Name", textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
@@ -237,7 +259,7 @@ class _DroneImagePreviewState extends State<DroneImagePreview> {
           SizedBox(height: 15),
           if (!widget.isUserLoggedIn)
             Padding(
-              padding: const EdgeInsets.only(bottom: 15.0),
+              padding: const EdgeInsets.only(bottom: 5.0),
               child: Text("Please login to add to cart.", style: TextStyle(color: Colors.redAccent, fontSize: 14)),
             ),
           ElevatedButton(
