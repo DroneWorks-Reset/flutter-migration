@@ -83,7 +83,7 @@ final Map<String, Map<String, Map<String, String>>> partDetails = {
       "pic4": { "name": "Blue Herelink Smart Controller", "price": "3699.00", "description": "An NDAA-compliant smart controller with an integrated screen and long-range HD video transmission.", "link": "https://nwblue.com/products/herelink-blue-v1-1", "imageUrl": placeholderImageUrl },
     },
     "Range Finder": { "pic1": {"name": "Laser Range Sensor", "price": "70", "description": "High-precision laser distance sensor.", "imageUrl": placeholderImageUrl}, "pic2": {"name": "Infrared Range Module", "price": "55", "description": "Affordable module for basic range sensing.", "imageUrl": placeholderImageUrl}, },
-  };
+};
 
 // A list of only the critical components for the builder
 final List<Map<String, String>> _criticalPartList = [
@@ -138,17 +138,27 @@ class DroneBuilderBody extends StatelessWidget {
                     topLeft: Radius.circular(10),
                     topRight: Radius.circular(10),
                   ),
-                  color: Colors.grey[900],
+                  color: Colors.blueAccent,
                   border: Border(
                     bottom: BorderSide(
-                      color: Colors.blueAccent,
-                      width: 3.0,
+                      color: Colors.cyan,
+                      width: 7.0,
                     ),
                   ),
                 ),
                 tabs: [
-                  Tab(text: "Ready to Fly Kits"),
-                  Tab(text: "Build Your Drone"),
+                  Tab(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                      child: Text("Ready to Fly Kits"),
+                    ),
+                  ),
+                  Tab(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 8.0, horizontal: 16.0),
+                      child: Text("Build Your Drone"),
+                    ),
+                    ),
                 ],
               )
             ],
@@ -286,21 +296,18 @@ class CustomBuildView extends StatefulWidget {
 
 class _CustomBuildViewState extends State<CustomBuildView> {
   String selectedPart = _criticalPartList.first['title']!;
-
-  // --- 1. ADD CONTROLLER AND KEY ---
+  
   final ScrollController _scrollController = ScrollController();
   final GlobalKey _previewKey = GlobalKey();
+  final GlobalKey _optionalUpgradesKey = GlobalKey();
 
   @override
   void dispose() {
-    _scrollController.dispose(); // Always dispose of controllers
+    _scrollController.dispose();
     super.dispose();
   }
 
-  // --- 2. ADD SCROLLING FUNCTION ---
   void _scrollToPreview() {
-    // We use a post-frame callback to ensure the widget has been laid out
-    // and its position is available before we try to scroll to it.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final context = _previewKey.currentContext;
       if (context != null) {
@@ -310,6 +317,20 @@ class _CustomBuildViewState extends State<CustomBuildView> {
           curve: Curves.easeInOut,
         );
       }
+    });
+  }
+  
+  void _scrollToOptionalUpgrades() {
+    Future.delayed(const Duration(milliseconds: 100), () {
+       final context = _optionalUpgradesKey.currentContext;
+       if (context != null) {
+         Scrollable.ensureVisible(
+           context,
+           duration: const Duration(milliseconds: 300),
+           alignment: 1.0, 
+           curve: Curves.easeOut,
+         );
+       }
     });
   }
 
@@ -331,7 +352,13 @@ class _CustomBuildViewState extends State<CustomBuildView> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(flex: 2, child: _buildLeftMenu(isWide: true)),
+          Expanded(
+            flex: 2, 
+            child: SingleChildScrollView(
+              controller: _scrollController,
+              child: _buildLeftMenu(isWide: true)
+            )
+          ),
           SizedBox(width: 20),
           Expanded(
             flex: 3,
@@ -351,7 +378,7 @@ class _CustomBuildViewState extends State<CustomBuildView> {
         children: [
           _buildLeftMenu(isWide: false),
           SizedBox(height: 24),
-         Container(
+          Container(
             key: _previewKey,
             child: DroneImagePreview(isUserLoggedIn: widget.isUserLoggedIn, selectedPart: selectedPart),
           ),
@@ -373,7 +400,6 @@ class _CustomBuildViewState extends State<CustomBuildView> {
           isSelected: selectedPart == part['title'],
           onSelect: () {
             setState(() { selectedPart = part['title']!; });
-            // --- 5. TRIGGER THE SCROLL ON TAP ---
             if (!isWide) {
               _scrollToPreview();
             }
@@ -381,6 +407,13 @@ class _CustomBuildViewState extends State<CustomBuildView> {
         )),
         SizedBox(height: 24),
         ExpansionTile(
+          //key: _optionalUpgradesKey,
+          key: const PageStorageKey('optional-upgrades-tile'),
+          onExpansionChanged: (isExpanded) {
+            if (isExpanded && isWide) {
+              _scrollToOptionalUpgrades();
+            }
+          },
           title: Text("Optional Upgrades", style: TextStyle(color: Colors.orangeAccent, fontSize: 20, fontWeight: FontWeight.bold)),
           leading: Icon(Icons.add, color: Colors.orangeAccent),
           childrenPadding: EdgeInsets.only(left: 16.0),
@@ -390,7 +423,6 @@ class _CustomBuildViewState extends State<CustomBuildView> {
             isSelected: selectedPart == part['title'],
             onSelect: () {
               setState(() { selectedPart = part['title']!; });
-              // --- 5. TRIGGER THE SCROLL ON TAP ---
               if (!isWide) {
                 _scrollToPreview();
               }
@@ -545,20 +577,20 @@ class _DroneImagePreviewState extends State<DroneImagePreview> {
       imageWidget = Image.asset('img/fallback.jpg', fit: BoxFit.contain);
     }
 
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final imageContainerSize = (constraints.maxWidth * 0.9).clamp(0.0, 500.0);
-        return Container(
-          padding: EdgeInsets.symmetric(vertical: 20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
+    final screenWidth = MediaQuery.of(context).size.width;
+    final imageContainerSize = (screenWidth * 0.8).clamp(0.0, 500.0);
+
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 20),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  IconButton(icon: const Icon(Icons.arrow_back_ios, color: Colors.white), onPressed: showPreviousImage),
-                  Expanded(
-                   child: InkWell(
+              IconButton(icon: const Icon(Icons.arrow_back_ios, color: Colors.white), onPressed: showPreviousImage),
+              Expanded(
+                child: InkWell(
                   onTap: () {
                     if (link != null && link.isNotEmpty) {
                       _launchURL(link);
@@ -573,43 +605,41 @@ class _DroneImagePreviewState extends State<DroneImagePreview> {
                   ),
                 ),
               ),
-                  IconButton(icon: const Icon(Icons.arrow_forward_ios, color: Colors.white), onPressed: showNextImage),
-                ],
-              ),
-              SizedBox(height: 20),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Text(detail?['name'] ?? "Part Name", textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-              ),
-              SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Text(detail?['description'] ?? "Description not available", textAlign: TextAlign.center, style: TextStyle(color: Colors.white70, fontSize: 16, height: 1.5)),
-              ),
-              SizedBox(height: 10),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20.0),
-                child: Text(
-                  "\$${detail?['price'] ?? 'N/A'}",
-                  textAlign: TextAlign.center,
-                  style: TextStyle(color: Colors.greenAccent, fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-              ),
-              SizedBox(height: 15),
-              if (!widget.isUserLoggedIn)
-                Padding(
-                  padding: const EdgeInsets.only(bottom: 15.0),
-                  child: Text("Please login to add to cart.", style: TextStyle(color: Colors.redAccent, fontSize: 14)),
-                ),
-              ElevatedButton(
-                onPressed: widget.isUserLoggedIn ? handleAddToCart : null,
-                style: ElevatedButton.styleFrom(padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15), textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                child: Text("Add to Cart"),
-              ),
+              IconButton(icon: const Icon(Icons.arrow_forward_ios, color: Colors.white), onPressed: showNextImage),
             ],
           ),
-        );
-      },
+          SizedBox(height: 20),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Text(detail?['name'] ?? "Part Name", textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+          ),
+          SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Text(detail?['description'] ?? "Description not available", textAlign: TextAlign.center, style: TextStyle(color: Colors.white70, fontSize: 16, height: 1.5)),
+          ),
+          SizedBox(height: 10),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: Text(
+              "\$${detail?['price'] ?? 'N/A'}",
+              textAlign: TextAlign.center,
+              style: TextStyle(color: Colors.greenAccent, fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+          ),
+          SizedBox(height: 15),
+          if (!widget.isUserLoggedIn)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 15.0),
+              child: Text("Please login to add to cart.", style: TextStyle(color: Colors.redAccent, fontSize: 14)),
+            ),
+          ElevatedButton(
+            onPressed: widget.isUserLoggedIn ? handleAddToCart : null,
+            style: ElevatedButton.styleFrom(padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15), textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+            child: Text("Add to Cart"),
+          ),
+        ],
+      ),
     );
   }
 }
