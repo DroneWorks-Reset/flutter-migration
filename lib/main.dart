@@ -153,6 +153,7 @@ class _SideNavState extends State<SideNav> with WidgetsBindingObserver {
     return PageView.builder(
       controller: _pageController,
       itemCount: _pages.length,
+      scrollDirection: Axis.vertical,
       itemBuilder: (context, index) => _buildPageContent(index),
       onPageChanged: (index) => setState(() => _currentIndex = index),
     );

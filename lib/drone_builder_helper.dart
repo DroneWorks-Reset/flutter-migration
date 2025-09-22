@@ -3,23 +3,17 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-// The placeholder URL to be used for items without a specific image.
+// --- DATA DEFINITIONS ---
+
 final String placeholderImageUrl = "https://cdn.pixabay.com/photo/2017/06/16/07/26/under-construction-2408061_1280.png";
 
-// The complete, reordered product data map. It's a top-level variable for easy access.
 final Map<String, Map<String, Map<String, String>>> partDetails = {
-    "Preconfigured Platforms": {
+    "Ready to Fly Kit": {
       "pic1": {"name": "FPV Mosquito", "price": "1200", "description": "A versatile FPV quadcopter perfect for beginners and pros alike.", "imageUrl": placeholderImageUrl},
       "pic2": {"name": "Wise Owl", "price": "1800", "description": "High-performance hexacopter for heavy payloads.", "imageUrl": placeholderImageUrl},
     },
     "Frames": {
-      "pic1": {
-        "name": "Carbon Fiber Sheet: 200x300 mm, 2mm thick",
-        "price": "50.49",
-        "description": "A high-quality 3K carbon fiber sheet for custom drone frame construction.",
-        "link": "https://www.getfpv.com/lumenier-3k-carbon-fiber-sheet-2mm-thick-200x300mm.html",
-        "imageUrl": "https://cdn-v2.getfpv.com/media/catalog/product/cache/05bc89904627dbee2e1afef9cd2d4128/l/u/lumenier-qav-xs-stretch-fpv-racing-quadcopter_1_1_1_1_1_1_2.jpg"
-      },
+      "pic1": { "name": "Carbon Fiber Sheet: 200x300 mm, 2mm thick", "price": "50.49", "description": "A high-quality 3K carbon fiber sheet for custom drone frame construction.", "link": "https://www.getfpv.com/lumenier-3k-carbon-fiber-sheet-2mm-thick-200x300mm.html", "imageUrl": "https://cdn-v2.getfpv.com/media/catalog/product/cache/05bc89904627dbee2e1afef9cd2d4128/l/u/lumenier-qav-xs-stretch-fpv-racing-quadcopter_1_1_1_1_1_1_2.jpg" },
       "pic2": {"name": "Carbon X Frame", "price": "150", "description": "Lightweight carbon fiber frame for agility and strength.", "imageUrl": placeholderImageUrl},
       "pic3": {"name": "Titanium Heavy Frame", "price": "220", "description": "Durable frame for rugged conditions and heavy drones.", "imageUrl": placeholderImageUrl},
     },
@@ -62,7 +56,7 @@ final Map<String, Map<String, Map<String, String>>> partDetails = {
     "LIDARs": { "pic1": {"name": "LIDAR Lite v4", "price": "170", "description": "Accurate distance sensing in compact form.", "imageUrl": placeholderImageUrl}, "pic2": {"name": "TF Mini Plus", "price": "110", "description": "Lightweight LIDAR for collision avoidance.", "imageUrl": placeholderImageUrl}, },
     "Lights": { "pic1": {"name": "LED Navigation Kit", "price": "30", "description": "Enhances visibility for orientation and safety.", "imageUrl": placeholderImageUrl}, "pic2": {"name": "Strobe Beacon", "price": "25", "description": "Ultra-bright strobe for visual tracking.", "imageUrl": placeholderImageUrl}, },
     "Motors": {
-      "pic1": {"name": "Axisflying AE V2 2306_5 Motor", "price": "20.99", "description": "A high-performance 2306_5 motor, available in 1860KV or 1960KV.", "link": "https://www.getfpv.com/axisflying-ae-v2-2306-5-motor-1860kv-1960kv.html", "imageUrl": "https://cdn-v2.getfpv.com/media/catalog/product/cache/6305596479836c3bfef8b369c2d05576/a/x/axisflying_ae_v2_2306-5_motor_-_1860kv-1960kv-1.jpg"},
+      "pic1": {"name": "Axisflying AE V2 2306.5 Motor", "price": "20.99", "description": "A high-performance 2306.5 motor, available in 1860KV or 1960KV.", "link": "https://www.getfpv.com/axisflying-ae-v2-2306-5-motor-1860kv-1960kv.html", "imageUrl": "https://cdn-v2.getfpv.com/media/catalog/product/cache/6305596479836c3bfef8b369c2d05576/a/x/axisflying_ae_v2_2306-5_motor_-_1860kv-1960kv-1.jpg"},
       "pic2": {"name": "Heavy Lift Motor 3510", "price": "65", "description": "Designed for lifting larger payloads.", "imageUrl": placeholderImageUrl},
       "pic3": { "name": "Readytosky 2205 2300KV Brushless Motor", "price": "35.99", "description": "A set of four 2300KV motors suitable for FPV quadcopters.", "link": "https://www.amazon.com/Readytosky-RS2205-2300KV-Brushless-Multicopter/dp/B088NGCZ64", "imageUrl": placeholderImageUrl },
       "pic4": { "name": "Holybro 2216 920 KV Motor", "price": "32.29", "description": "A set of four 920KV motors compatible with 1045 propellers, ideal for larger frames.", "link": "https://www.aliexpress.us/item/3256804376252643.html", "imageUrl": placeholderImageUrl },
@@ -89,91 +83,404 @@ final Map<String, Map<String, Map<String, String>>> partDetails = {
       "pic4": { "name": "Blue Herelink Smart Controller", "price": "3699.00", "description": "An NDAA-compliant smart controller with an integrated screen and long-range HD video transmission.", "link": "https://nwblue.com/products/herelink-blue-v1-1", "imageUrl": placeholderImageUrl },
     },
     "Range Finder": { "pic1": {"name": "Laser Range Sensor", "price": "70", "description": "High-precision laser distance sensor.", "imageUrl": placeholderImageUrl}, "pic2": {"name": "Infrared Range Module", "price": "55", "description": "Affordable module for basic range sensing.", "imageUrl": placeholderImageUrl}, },
-};
-/// Defines the main two-column layout for the drone builder page.
-Widget droneBuilderBody(bool isUserLoggedIn, String selectedPart, Function selectPart) {
-  return Scaffold(
-    body: Container(
-      color: Colors.black,
+  };
+
+// A list of only the critical components for the builder
+final List<Map<String, String>> _criticalPartList = [
+  {"title": "Frames", "subtitle": "Select a drone frame"},
+  {"title": "Motors", "subtitle": "Choose powerful motors"},
+  {"title": "ESCs", "subtitle": "Select electronic speed controllers"},
+  {"title": "Flight Controller", "subtitle": "Choose a flight controller"},
+  {"title": "Propellers", "subtitle": "Pick suitable propellers"},
+  {"title": "Batteries", "subtitle": "Pick a long-lasting battery"},
+  {"title": "Radio Transmitter", "subtitle": "Select a radio transmitter"},
+  {"title": "Radio Receivers", "subtitle": "Choose a radio receiver"},
+];
+
+// A list of optional/extra components
+final List<Map<String, String>> _optionalPartList = [
+  {"title": "Accessories", "subtitle": "Add extra components"},
+  {"title": "Camera Accessories", "subtitle": "Enhance your camera capabilities"},
+  {"title": "Onboard Computer", "subtitle": "Select an onboard computer"},
+  {"title": "Parachutes", "subtitle": "Add safety parachutes"},
+  {"title": "LIDARs", "subtitle": "Add LIDAR sensors"},
+  {"title": "Radars & Sonars", "subtitle": "Equip with radar and sonar"},
+  {"title": "Lights", "subtitle": "Equip your drone with lights"},
+  {"title": "GNSS Antenna", "subtitle": "Select a GNSS antenna"},
+  {"title": "Range Finder", "subtitle": "Add a range finder"},
+];
+
+// --- MAIN TABBED WIDGET ---
+
+class DroneBuilderBody extends StatelessWidget {
+  final bool isUserLoggedIn;
+  const DroneBuilderBody({Key? key, required this.isUserLoggedIn}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return DefaultTabController(
+      length: 2,
+      child: Scaffold(
+        backgroundColor: Colors.black,
+        appBar: AppBar(
+          backgroundColor: Colors.black,
+          elevation: 0,
+          flexibleSpace: Column(
+            mainAxisAlignment: MainAxisAlignment.end,
+            children: [
+              TabBar(
+                labelColor: Colors.white,
+                unselectedLabelColor: Colors.white70,
+                labelStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                unselectedLabelStyle: TextStyle(fontSize: 17),
+                indicator: BoxDecoration(
+                  borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(10),
+                    topRight: Radius.circular(10),
+                  ),
+                  color: Colors.grey[900],
+                  border: Border(
+                    bottom: BorderSide(
+                      color: Colors.blueAccent,
+                      width: 3.0,
+                    ),
+                  ),
+                ),
+                tabs: [
+                  Tab(text: "Ready to Fly Kits"),
+                  Tab(text: "Build Your Drone"),
+                ],
+              )
+            ],
+          ),
+        ),
+        body: TabBarView(
+          children: [
+            ReadyToFlyView(isUserLoggedIn: isUserLoggedIn),
+            CustomBuildView(isUserLoggedIn: isUserLoggedIn),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// --- TAB 1: READY TO FLY KITS ---
+
+class ReadyToFlyView extends StatefulWidget {
+  final bool isUserLoggedIn;
+  const ReadyToFlyView({Key? key, required this.isUserLoggedIn}) : super(key: key);
+
+  @override
+  _ReadyToFlyViewState createState() => _ReadyToFlyViewState();
+}
+
+class _ReadyToFlyViewState extends State<ReadyToFlyView> {
+  String selectedKitName = partDetails["Ready to Fly Kit"]?.values.first['name'] ?? "";
+
+  void _onKitChanged(int newIndex) {
+    final kitList = (partDetails["Ready to Fly Kit"] ?? {}).values.toList();
+    if (newIndex >= 0 && newIndex < kitList.length) {
+      setState(() {
+        selectedKitName = kitList[newIndex]['name']!;
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWide = constraints.maxWidth >= 900;
+        return isWide
+            ? _buildWideLayout()
+            : _buildNarrowLayout();
+      },
+    );
+  }
+
+  Widget _buildWideLayout() {
+    final kits = partDetails["Ready to Fly Kit"] ?? {};
+    int selectedIndex = kits.values.toList().indexWhere((kit) => kit['name'] == selectedKitName);
+    if (selectedIndex == -1) selectedIndex = 0;
+
+    return Container(
       padding: EdgeInsets.all(16),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Expanded(flex: 2, 
+          Expanded(
+            flex: 2,
             child: SingleChildScrollView(
-                child: Column( crossAxisAlignment: CrossAxisAlignment.start, 
-                children: [ Padding( padding: const EdgeInsets.symmetric(vertical: 16.0), 
-                child: Text("Build Your Drone", style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold))), 
-                ..._partList.map((part) => _buildOptionTile(part['title']!, part['subtitle']!, selectedPart, selectPart))]))),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Padding(padding: const EdgeInsets.symmetric(vertical: 16.0), child: Text("Choose a Kit", style: TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.bold))),
+                  ...kits.values.map((kit) => _buildOptionTile(
+                    title: kit['name']!,
+                    subtitle: kit['description']!,
+                    isSelected: selectedKitName == kit['name'],
+                    onSelect: () => setState(() { selectedKitName = kit['name']!; }),
+                  )).toList()
+                ],
+              ),
+            ),
+          ),
           SizedBox(width: 20),
-          Expanded(flex: 3, child: DroneImagePreview(isUserLoggedIn: isUserLoggedIn, selectedPart: selectedPart)),
+          Expanded(
+            flex: 3,
+            child: DroneImagePreview(
+              isUserLoggedIn: widget.isUserLoggedIn,
+              selectedPart: "Ready to Fly Kit",
+              initialIndex: selectedIndex,
+              onImageChanged: _onKitChanged,
+            ),
+          ),
         ],
       ),
-    ),
-  );
+    );
+  }
+
+  Widget _buildNarrowLayout() {
+    final kits = partDetails["Ready to Fly Kit"] ?? {};
+    int selectedIndex = kits.values.toList().indexWhere((kit) => kit['name'] == selectedKitName);
+    if (selectedIndex == -1) selectedIndex = 0;
+
+    return SingleChildScrollView(
+      padding: EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Padding(padding: const EdgeInsets.symmetric(vertical: 16.0), child: Text("Choose a Kit", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold))),
+              ...kits.values.map((kit) => _buildOptionTile(
+                title: kit['name']!,
+                subtitle: kit['description']!,
+                isSelected: selectedKitName == kit['name'],
+                onSelect: () => setState(() { selectedKitName = kit['name']!; }),
+              )).toList()
+            ],
+          ),
+          SizedBox(height: 24),
+          DroneImagePreview(
+            isUserLoggedIn: widget.isUserLoggedIn,
+            selectedPart: "Ready to Fly Kit",
+            initialIndex: selectedIndex,
+            onImageChanged: _onKitChanged,
+          ),
+        ],
+      ),
+    );
+  }
 }
 
-/// The list of data for the part selection menu on the left.
-final List<Map<String, String>> _partList = [
-  {"title": "Preconfigured Platforms", "subtitle": "Choose from pre-built drone models"},
-  {"title": "Frames", "subtitle": "Select a drone frame"},
-  {"title": "Accessories", "subtitle": "Add extra components"},
-  {"title": "Batteries", "subtitle": "Pick a long-lasting battery"},
-  {"title": "Camera Accessories", "subtitle": "Enhance your drone's camera capabilities"},
-  {"title": "ESCs", "subtitle": "Select electronic speed controllers"},
-  {"title": "Flight Controller", "subtitle": "Choose a flight controller"},
-  {"title": "GNSS Antenna", "subtitle": "Select a GNSS antenna"},
-  {"title": "LIDARs", "subtitle": "Add LIDAR sensors"},
-  {"title": "Lights", "subtitle": "Equip your drone with lights"},
-  {"title": "Motors", "subtitle": "Choose powerful motors"},
-  {"title": "Onboard Computer", "subtitle": "Select an onboard computer"},
-  {"title": "Parachutes", "subtitle": "Add safety parachutes"},
-  {"title": "Propellers", "subtitle": "Pick suitable propellers"},
-  {"title": "Radars & Sonars", "subtitle": "Equip your drone with radar and sonar systems"},
-  {"title": "Radio Receivers", "subtitle": "Choose a radio receiver"},
-  {"title": "Radio Transmitter", "subtitle": "Select a radio transmitter"},
-  {"title": "Range Finder", "subtitle": "Add a range finder"},
-];
+// --- TAB 2: CUSTOM DRONE BUILDER ---
+class CustomBuildView extends StatefulWidget {
+  final bool isUserLoggedIn;
+  const CustomBuildView({Key? key, required this.isUserLoggedIn}) : super(key: key);
+  @override
+  _CustomBuildViewState createState() => _CustomBuildViewState();
+}
 
-Widget _buildOptionTile(String title, String subtitle, String selectedPart, Function selectPart) {
-  final bool isSelected = selectedPart == title;
-  return Container(width: 500, margin: const EdgeInsets.symmetric(vertical: 4), decoration: BoxDecoration(color: isSelected ? Colors.blueAccent : Colors.transparent, borderRadius: BorderRadius.circular(8)), child: ListTile(leading: Icon(Icons.settings, color: isSelected ? Colors.white : Colors.blueAccent.withOpacity(0.7)), title: Text(title, style: TextStyle(fontWeight: FontWeight.bold, color: isSelected ? Colors.white : Colors.white70)), subtitle: Text(subtitle, style: TextStyle(color: isSelected ? Colors.white.withOpacity(0.9) : Colors.white60)), trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white), onTap: () => selectPart(title)));
+class _CustomBuildViewState extends State<CustomBuildView> {
+  String selectedPart = _criticalPartList.first['title']!;
+
+  // --- 1. ADD CONTROLLER AND KEY ---
+  final ScrollController _scrollController = ScrollController();
+  final GlobalKey _previewKey = GlobalKey();
+
+  @override
+  void dispose() {
+    _scrollController.dispose(); // Always dispose of controllers
+    super.dispose();
+  }
+
+  // --- 2. ADD SCROLLING FUNCTION ---
+  void _scrollToPreview() {
+    // We use a post-frame callback to ensure the widget has been laid out
+    // and its position is available before we try to scroll to it.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      final context = _previewKey.currentContext;
+      if (context != null) {
+        Scrollable.ensureVisible(
+          context,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOut,
+        );
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final bool isWide = constraints.maxWidth >= 900;
+        return isWide
+            ? _buildWideLayout()
+            : _buildNarrowLayout();
+      },
+    );
+  }
+
+  Widget _buildWideLayout() {
+    return Container(
+      padding: EdgeInsets.all(16),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Expanded(flex: 2, child: _buildLeftMenu(isWide: true)),
+          SizedBox(width: 20),
+          Expanded(
+            flex: 3,
+            child: DroneImagePreview(isUserLoggedIn: widget.isUserLoggedIn, selectedPart: selectedPart),
+          ),
+        ],
+      ),
+    );
+  }
+  
+  Widget _buildNarrowLayout() {
+    return SingleChildScrollView(
+      controller: _scrollController,
+      padding: EdgeInsets.all(16),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          _buildLeftMenu(isWide: false),
+          SizedBox(height: 24),
+         Container(
+            key: _previewKey,
+            child: DroneImagePreview(isUserLoggedIn: widget.isUserLoggedIn, selectedPart: selectedPart),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLeftMenu({required bool isWide}) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(padding: const EdgeInsets.symmetric(vertical: 16.0), child: Text("Select Components", style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold))),
+        Text("Critical Components", style: TextStyle(color: Colors.redAccent, fontSize: 20, fontWeight: FontWeight.bold)),
+        SizedBox(height: 8),
+        ..._criticalPartList.map((part) => _buildOptionTile(
+          title: part['title']!,
+          subtitle: part['subtitle']!,
+          isSelected: selectedPart == part['title'],
+          onSelect: () {
+            setState(() { selectedPart = part['title']!; });
+            // --- 5. TRIGGER THE SCROLL ON TAP ---
+            if (!isWide) {
+              _scrollToPreview();
+            }
+          },
+        )),
+        SizedBox(height: 24),
+        ExpansionTile(
+          title: Text("Optional Upgrades", style: TextStyle(color: Colors.orangeAccent, fontSize: 20, fontWeight: FontWeight.bold)),
+          leading: Icon(Icons.add, color: Colors.orangeAccent),
+          childrenPadding: EdgeInsets.only(left: 16.0),
+          children: _optionalPartList.map((part) => _buildOptionTile(
+            title: part['title']!,
+            subtitle: part['subtitle']!,
+            isSelected: selectedPart == part['title'],
+            onSelect: () {
+              setState(() { selectedPart = part['title']!; });
+              // --- 5. TRIGGER THE SCROLL ON TAP ---
+              if (!isWide) {
+                _scrollToPreview();
+              }
+            },
+          )).toList(),
+        ),
+      ],
+    );
+  }
+}
+
+// --- SHARED HELPER WIDGETS ---
+
+Widget _buildOptionTile({
+  required String title,
+  required String subtitle,
+  required bool isSelected,
+  required VoidCallback onSelect,
+}) {
+  return Container(
+    margin: const EdgeInsets.symmetric(vertical: 4),
+    decoration: BoxDecoration(
+      color: isSelected ? Colors.blueAccent : Colors.transparent,
+      borderRadius: BorderRadius.circular(8),
+    ),
+    child: ListTile(
+      leading: Icon(Icons.settings, color: isSelected ? Colors.white : Colors.blueAccent.withOpacity(0.7)),
+      title: Text(title, style: TextStyle(fontWeight: FontWeight.bold, color: isSelected ? Colors.white : Colors.white70)),
+      subtitle: Text(subtitle, style: TextStyle(color: isSelected ? Colors.white.withOpacity(0.9) : Colors.white60)),
+      trailing: Icon(Icons.arrow_forward_ios, size: 16, color: Colors.white),
+      onTap: onSelect,
+    ),
+  );
 }
 
 class DroneImagePreview extends StatefulWidget {
   final bool isUserLoggedIn;
   final String selectedPart;
+  final int initialIndex;
+  final Function(int newIndex)? onImageChanged;
 
-  DroneImagePreview({required this.isUserLoggedIn, required this.selectedPart});
+  DroneImagePreview({
+    required this.isUserLoggedIn,
+    required this.selectedPart,
+    this.initialIndex = 0,
+    this.onImageChanged,
+  });
 
   @override
   _DroneImagePreviewState createState() => _DroneImagePreviewState();
 }
 
 class _DroneImagePreviewState extends State<DroneImagePreview> {
-  int currentIndex = 0;
+  late int currentIndex;
 
+  @override
+  void initState() {
+    super.initState();
+    currentIndex = widget.initialIndex;
+  }
+  
   @override
   void didUpdateWidget(covariant DroneImagePreview oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.selectedPart != oldWidget.selectedPart) {
       setState(() { currentIndex = 0; });
+    } else if (widget.initialIndex != oldWidget.initialIndex) {
+      setState(() { currentIndex = widget.initialIndex; });
     }
   }
 
   void showPreviousImage() {
     final items = partDetails[widget.selectedPart]?.values.toList() ?? [];
     if (items.isEmpty) return;
-    setState(() { currentIndex = (currentIndex - 1 + items.length) % items.length; });
+    setState(() { 
+      currentIndex = (currentIndex - 1 + items.length) % items.length; 
+      widget.onImageChanged?.call(currentIndex);
+    });
   }
 
   void showNextImage() {
     final items = partDetails[widget.selectedPart]?.values.toList() ?? [];
     if (items.isEmpty) return;
-    setState(() { currentIndex = (currentIndex + 1) % items.length; });
+    setState(() { 
+      currentIndex = (currentIndex + 1) % items.length; 
+      widget.onImageChanged?.call(currentIndex);
+      });
   }
 
-void handleAddToCart() async {
+  void handleAddToCart() async {
     if (!widget.isUserLoggedIn) return;
     final user = FirebaseAuth.instance.currentUser;
     if (user == null) return;
@@ -183,7 +490,6 @@ void handleAddToCart() async {
     final picKey = partCategoryData.keys.toList()[currentIndex];
     final detail = partCategoryData[picKey];
     if (detail != null) {
-      // REVERTED: Now using user's email as the key, as requested.
       final partRef = db.child(user.email!.replaceAll('.', ',')).child('cart').child(widget.selectedPart).child(detail['name']!);
       
       final snapshot = await partRef.get();
@@ -224,6 +530,9 @@ void handleAddToCart() async {
       return Center(child: Text("No items available for this category.", style: TextStyle(color: Colors.white)));
     }
     final picKeys = partCategoryData.keys.toList();
+    if (currentIndex >= picKeys.length) {
+      currentIndex = 0;
+    }
     final picKey = picKeys[currentIndex];
     final detail = partCategoryData[picKey];
     final imageUrl = detail?['imageUrl'];
@@ -231,57 +540,76 @@ void handleAddToCart() async {
 
     Widget imageWidget;
     if (imageUrl != null && imageUrl.isNotEmpty) {
-      imageWidget = Image.network(imageUrl, fit: BoxFit.contain, loadingBuilder: (BuildContext context, Widget child, ImageChunkEvent? loadingProgress) { if (loadingProgress == null) return child; return Center(child: CircularProgressIndicator(value: loadingProgress.expectedTotalBytes != null ? loadingProgress.cumulativeBytesLoaded / loadingProgress.expectedTotalBytes! : null));}, errorBuilder: (context, error, stackTrace) => const Center(child: Icon(Icons.broken_image, color: Colors.grey, size: 48)));
+      imageWidget = Image.network(imageUrl, fit: BoxFit.contain, loadingBuilder: (ctx, child, progress) => progress == null ? child : Center(child: CircularProgressIndicator()), errorBuilder: (ctx, err, stack) => Center(child: Icon(Icons.broken_image)));
     } else {
-      imageWidget = Image.asset('img/${widget.selectedPart.toLowerCase().replaceAll(' ', '_')}/${picKey}.jpg', fit: BoxFit.contain, errorBuilder: (context, error, stackTrace) => const Center(child: Text('Image not found', style: TextStyle(color: Colors.white54))));
+      imageWidget = Image.asset('img/fallback.jpg', fit: BoxFit.contain);
     }
 
-    return Container(
-      width: 800,
-      padding: EdgeInsets.symmetric(horizontal: 10, vertical: 20),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final imageContainerSize = (constraints.maxWidth * 0.9).clamp(0.0, 500.0);
+        return Container(
+          padding: EdgeInsets.symmetric(vertical: 20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
-              IconButton(icon: const Icon(Icons.arrow_back_ios, color: Colors.white), onPressed: showPreviousImage),
-              InkWell(onTap: () { if (link != null && link.isNotEmpty) { _launchURL(link); } else { _showNoUrlDialog(); } }, child: Container(height: 500, width: 500, decoration: BoxDecoration(border: Border.all(color: Colors.redAccent, width: 2)), child: imageWidget)),
-              IconButton(icon: const Icon(Icons.arrow_forward_ios, color: Colors.white), onPressed: showNextImage),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(icon: const Icon(Icons.arrow_back_ios, color: Colors.white), onPressed: showPreviousImage),
+                  Expanded(
+                   child: InkWell(
+                  onTap: () {
+                    if (link != null && link.isNotEmpty) {
+                      _launchURL(link);
+                    } else {
+                      _showNoUrlDialog();
+                    }
+                  },
+                  child: Container(
+                    height: imageContainerSize,
+                    decoration: BoxDecoration(border: Border.all(color: Colors.redAccent, width: 2)),
+                    child: imageWidget,
+                  ),
+                ),
+              ),
+                  IconButton(icon: const Icon(Icons.arrow_forward_ios, color: Colors.white), onPressed: showNextImage),
+                ],
+              ),
+              SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Text(detail?['name'] ?? "Part Name", textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
+              ),
+              SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Text(detail?['description'] ?? "Description not available", textAlign: TextAlign.center, style: TextStyle(color: Colors.white70, fontSize: 16, height: 1.5)),
+              ),
+              SizedBox(height: 10),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: Text(
+                  "\$${detail?['price'] ?? 'N/A'}",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.greenAccent, fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+              ),
+              SizedBox(height: 15),
+              if (!widget.isUserLoggedIn)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 15.0),
+                  child: Text("Please login to add to cart.", style: TextStyle(color: Colors.redAccent, fontSize: 14)),
+                ),
+              ElevatedButton(
+                onPressed: widget.isUserLoggedIn ? handleAddToCart : null,
+                style: ElevatedButton.styleFrom(padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15), textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                child: Text("Add to Cart"),
+              ),
             ],
           ),
-          SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Text(detail?['name'] ?? "Part Name", textAlign: TextAlign.center, style: TextStyle(color: Colors.white, fontSize: 24, fontWeight: FontWeight.bold)),
-          ),
-          SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Text(detail?['description'] ?? "Description not available", textAlign: TextAlign.center, style: TextStyle(color: Colors.white70, fontSize: 16, height: 1.5)),
-          ),
-          SizedBox(height: 10),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: Text(
-              "\$${detail?['price'] ?? 'N/A'}",
-              textAlign: TextAlign.center,
-              style: TextStyle(color: Colors.greenAccent, fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-          ),
-          SizedBox(height: 15),
-          if (!widget.isUserLoggedIn)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 5.0),
-              child: Text("Please login to add to cart.", style: TextStyle(color: Colors.redAccent, fontSize: 14)),
-            ),
-          ElevatedButton(
-            onPressed: widget.isUserLoggedIn ? handleAddToCart : null,
-            style: ElevatedButton.styleFrom(padding: EdgeInsets.symmetric(horizontal: 30, vertical: 15), textStyle: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            child: Text("Add to Cart"),
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

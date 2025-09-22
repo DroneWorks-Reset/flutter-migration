@@ -1,13 +1,10 @@
-import 'package:droneworkz/checklist.dart';
 import 'package:droneworkz/drone_builder_helper.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:firebase_database/firebase_database.dart';
-import 'cart.dart'; // Assumes you have a cart.dart file for your CartPage widget
-
-// This global variable holds the state for the selected part category.
-String selectedPart = 'Preconfigured Platforms';
+import 'cart.dart';
+import 'checklist.dart';
 
 class Dronebuilder extends StatefulWidget {
   @override
@@ -20,7 +17,7 @@ class _DronebuilderState extends State<Dronebuilder> {
   bool isUserLoggedIn = false;
   int cartItemCount = 0;
   final DatabaseReference _database = FirebaseDatabase.instance.ref("Users");
-  bool _imagesPrecached = false; // Flag to ensure precaching runs only once
+  bool _imagesPrecached = false;
 
   @override
   void initState() {
@@ -31,14 +28,12 @@ class _DronebuilderState extends State<Dronebuilder> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Precache images after initState and when context is available.
     if (!_imagesPrecached) {
       _precacheAllImages();
       _imagesPrecached = true;
     }
   }
 
-  /// Loops through all items and downloads their images into the cache ahead of time.
   void _precacheAllImages() {
     print("Starting image precaching...");
     partDetails.forEach((category, items) {
@@ -52,26 +47,21 @@ class _DronebuilderState extends State<Dronebuilder> {
     print("Image precaching initiated.");
   }
 
-  // --- THIS IS THE KEY FIX ---
-  /// Uses a real-time listener to check for login/logout events.
   void _checkUserLoginStatus() {
     _auth.authStateChanges().listen((User? user) {
-      if (!mounted) return; // Ensure the widget is still in the tree
-
+      if (!mounted) return;
       if (user == null) {
-        // User is signed out
         setState(() {
           isUserLoggedIn = false;
           signinText = "Login";
           cartItemCount = 0;
         });
       } else {
-        // User is signed in
         setState(() {
           isUserLoggedIn = true;
           signinText = "Logout";
         });
-        _fetchCartItemCount(); // Fetch cart count as soon as user is confirmed
+        _fetchCartItemCount();
       }
     });
   }
@@ -79,9 +69,7 @@ class _DronebuilderState extends State<Dronebuilder> {
   void _fetchCartItemCount() async {
     User? user = _auth.currentUser;
     if (user != null) {
-      // IMPORTANT: Using user.uid is the recommended best practice.
       final cartRef = _database.child(user.email!.replaceAll('.', ',')).child('cart');
-
       cartRef.onValue.listen((event) {
         int total = 0;
         if (event.snapshot.exists && event.snapshot.value is Map) {
@@ -109,14 +97,13 @@ class _DronebuilderState extends State<Dronebuilder> {
     try {
       final GoogleSignIn googleSignIn = GoogleSignIn();
       final GoogleSignInAccount? googleUser = await googleSignIn.signIn();
-      if (googleUser == null) return null; // User canceled the sign-in
+      if (googleUser == null) return null;
 
       final GoogleSignInAuthentication googleAuth = await googleUser.authentication;
       final OAuthCredential credential = GoogleAuthProvider.credential(
         accessToken: googleAuth.accessToken,
         idToken: googleAuth.idToken,
       );
-
       UserCredential userCredential = await _auth.signInWithCredential(credential);
       return userCredential.user;
     } catch (e) {
@@ -127,7 +114,7 @@ class _DronebuilderState extends State<Dronebuilder> {
 
   Future<void> logout() async {
     try {
-      await GoogleSignIn().signOut(); // Also sign out from Google
+      await GoogleSignIn().signOut();
       await FirebaseAuth.instance.signOut();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('You have successfully logged out.')));
@@ -138,12 +125,6 @@ class _DronebuilderState extends State<Dronebuilder> {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Error signing out. Please try again.')));
       }
     }
-  }
-
-  void selectPart(String partName) {
-    setState(() {
-      selectedPart = partName;
-    });
   }
 
   void openCartBottomSheet() {
@@ -160,14 +141,11 @@ class _DronebuilderState extends State<Dronebuilder> {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.black,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
       isScrollControlled: true,
-      // --- CHANGE HERE: We now pass the openCartBottomSheet function to the ChecklistPage ---
       builder: (_) => FractionallySizedBox(
         heightFactor: 0.85,
-        child: ChecklistPage(onCheckout: openCartBottomSheet), // Pass the function
+        child: ChecklistPage(onCheckout: openCartBottomSheet),
       ),
     );
   }
@@ -180,7 +158,7 @@ class _DronebuilderState extends State<Dronebuilder> {
         backgroundColor: Colors.black,
         actions: [
           Tooltip(
-            message: "View Checklist",
+            message: "Drone Builder Checklist",
             child: IconButton(
               icon: Icon(Icons.checklist_rtl, color: Colors.white),
               onPressed: _openChecklistBottomSheet,
@@ -232,8 +210,7 @@ class _DronebuilderState extends State<Dronebuilder> {
           ),
         ],
       ),
-      
-      body: droneBuilderBody(isUserLoggedIn, selectedPart, selectPart),
+      body: DroneBuilderBody(isUserLoggedIn: isUserLoggedIn),
     );
   }
 }
