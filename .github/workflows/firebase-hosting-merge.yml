@@ -20,6 +20,9 @@ jobs:
       - name: Install Dependencies
         run: flutter pub get
 
+      - name: Clean Web App
+        run: flutter clean # This command creates the 'build/web' directory
+
       - name: Build Web App
         run: flutter build web --release # This command creates the 'build/web' directory
 
