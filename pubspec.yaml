@@ -44,6 +44,7 @@ dependencies:
   firebase_database: ^11.3.4
   sizer: ^3.0.3
   url_launcher: ^6.3.0 # Add this line
+  flutter_svg: ^2.0.10+1
 
 dev_dependencies:
   flutter_test:
@@ -83,6 +84,10 @@ flutter:
     - assets/img/preconfigured_platforms/pic2.jpg
     - assets/img/frames/pic1.jpg
     - assets/img/frames/pic2.jpg
+    - assets/img/drone_spinning.svg
+    - assets/img/drone_landed.svg
+    - assets/img/Ajaya_headshot.png
+    - assets/img/Profile_Shot_Aaron.png
 
 
     
